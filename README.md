@@ -1,36 +1,19 @@
+**Issue Summary:**
+I'm deploying a simple site to test Netlify redirect rules using `netlify.toml`. The intention is to block requests with suspicious query parameters and send them to a custom 404 page.
 
-# Netlify Query Redirect Failure Repro
+**Live Example:**
+https://scintillating-kitsune-ca921c.netlify.app/?slot=777  
+^ This should redirect to `/error/404.html`, but it does not. It just loads `index.html`.
 
-This is a **minimal test case** for a Netlify redirect issue involving query parameters.
+**Repo:**
+GitHub: https://github.com/Kanlep/netlify-query-redirect-test  
+Contains:
+- `index.html`
+- `error/404.html`
+- `netlify.toml`
+- `README.md` ← this file you're reading
 
-## The Issue
-
-Despite following [Netlify’s official documentation](https://docs.netlify.com/routing/redirects/#query-parameters), this site **does not block requests** with known spam query parameters via `netlify.toml`.
-
-## Expected Behavior
-
-Requests like:
-
-- `/index.html?seo=slime`
-- `/index.html?apk=virus`
-- `/index.html?slot=777`
-
-…should **redirect to** `/error/404.html` with a `404` status.
-
-## Actual Behavior
-
-All of those URLs **load `index.html` as if nothing happened**. Redirects are ignored.
-
-## Project Structure
-
-netlify-query-redirect-test/
-├── index.html ← visible test page
-├── error/
-│ └── 404.html ← where we want to send bad bots
-└── netlify.toml ← configured with documented redirect rules
-
-
-## netlify.toml
+**netlify.toml**
 
 [[redirects]]
   from = "/*"
@@ -49,12 +32,49 @@ netlify-query-redirect-test/
   query = { slot = ":value" }
   to = "/error/404.html"
   status = 404
-  Live Test Site
-  Your Netlify Deploy URL Here
- 
-Try it with ?seo=slime and weep with us.
 
-- Conclusion -
-The docs say this should work. It doesn’t.
+Expected Behavior:
+According to Netlify docs, this should trigger a redirect to /error/404.html with a 404 status if a query param like ?slot=777 is present.
 
-If this isn’t a bug, then the redirect docs need clarification. If it is a bug, please help us and fix it.
+Actual Behavior:
+It just shows the default page. No redirect. No error.
+
+We tried everything:
+netlify.toml lives at the root of the project (beside index.html)
+/error/404.html exists and is reachable directly
+Deployed a fresh build with cleared cache
+Confirmed deploy includes the correct files and structure
+Changed param names (to rule out reserved word issues)
+Tested from multiple browsers and incognito windows
+Tested using only _redirects (placed at the project root)
+Tried _redirects and netlify.toml together
+Even removed _redirects to rule out conflicts
+Verified _redirects wasn’t ignored in .gitignore by running git check-ignore -v _redirects
+
+Netlify Deploy URL:
+https://scintillating-kitsune-ca921c.netlify.app/
+Try it with ?seo=slime
+
+
+Conclusion
+The docs say this should work.
+It does not.
+
+If this isn’t a bug, then the redirect docs need clarification.
+If it is a bug, please help us and fix it.
+
+Thanks in advance.  
+-Kanlep
+
+UPDATE: This redirect rule works only if you set force = true in each rule block.
+Example:
+
+toml
+Copiar
+Editar
+[[redirects]]
+  from = "/*"
+  query = { slot = ":value" }
+  to = "/error/404.html"
+  status = 404
+  force = true
