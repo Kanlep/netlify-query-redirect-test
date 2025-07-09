@@ -1,3 +1,4 @@
+
 # Netlify Query Redirect Failure Repro
 
 This is a **minimal test case** for a Netlify redirect issue involving query parameters.
